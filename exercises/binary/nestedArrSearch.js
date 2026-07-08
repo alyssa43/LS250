@@ -13,7 +13,7 @@ find subarray:
 left = 0, right = matrix.length - 1 (2)
 subarrIndex = left + right / 2 -> 0 + 2 = 2 / 2 => 1
 subarr = matrix[subarrIndex] => [16, 20, 24]
-is subarr[0] >= target ? Yes -> is subarr[subarr.length - 1] <= target ? Yes -> return subarrIndex
+is subarr[0] <= target ? Yes -> is target <= subarr[subarr.length - 1] ? Yes -> return subarrIndex
 
 subarr found => [16, 20, 24]
 left = 0, right = subarr.length - 1 (2)
@@ -50,7 +50,7 @@ binarySearch(array, target, compareMethod) - returns index of `mid` when `condit
 
 findPossibleSubarrayIndex(matrix, target) - returns index of possible subarray, or -1 if doesn't exist
 1. Create a helper `compareRow` method that takes `matrix` and `target` as arguments: (steps below)
-  2. Create a variable called `helper` that is assigned to the value of `matrix[mid]` (mid will be in closure of `binarySearch`)
+  2. Create a variable called `helper` that is assigned to the value of `matrix[mid]` (mid will be passed in as arg from within `binarySearch`)
   3. If `row[0] <= target && target <= row[row.length - 1]` return `0`
   4. If `row[row.length - 1] < target` return `1` (to move search area to right)
   5. IF `row[row.length - 1] > target` return `-1` (to move search area to left)
@@ -58,33 +58,37 @@ findPossibleSubarrayIndex(matrix, target) - returns index of possible subarray, 
 2. Return the value of invoking `binarySearch(matrix, target, compareRow)` to find the index of the possible subarray where `target` may be located, and save 
 */
 
+const FOUND = 0;
+const SEARCH_RIGHT = 1;
+const SEARCH_LEFT = -1;
+
 const defaultCompare = (arr, mid, target) => {
-  if (arr[mid] === target) return 0;
-  return arr[mid] < target ? 1 : -1;
+  if (arr[mid] === target) return FOUND;
+  return arr[mid] < target ? SEARCH_RIGHT : SEARCH_LEFT;
 }
 
 function binarySearch(arr, target, compare = defaultCompare) {
-  let left = 0
+  let left = 0;
   let right = arr.length - 1;
   while (left <= right) {
     let mid = Math.floor((left + right) / 2);
-    const result = compare(arr, mid, target)
-    if (result === 0) {
+    const result = compare(arr, mid, target);
+    if (result === FOUND) {
       return mid;
-    } else if (result === 1) {
+    } else if (result === SEARCH_RIGHT) {
       left = mid + 1;
     } else {
       right = mid - 1;
     }
   }
-  return -1
+  return -1;
 }
 
 function findPossibleSubarrayIndex(matrix, target) {
   const compareRow = (matrix, mid, target) => {
     const row = matrix[mid];
-    if (row[0] <= target && target <= row[row.length - 1]) return 0;
-    return row[row.length - 1] < target ? 1 : -1
+    if (row[0] <= target && target <= row[row.length - 1]) return FOUND;
+    return row[row.length - 1] < target ? SEARCH_RIGHT : SEARCH_LEFT;
   };
 
   return binarySearch(matrix, target, compareRow);
